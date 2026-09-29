@@ -166,10 +166,12 @@ under `identifiers.other` instead of `account_ids`: the prompt itself told it to
 bucket (an account or profile URL is an account ID) and asks for invoice references with their
 prefix as written (`#8821`, not `8821`), which is what the verbatim rule already implied, and
 says dates and times are not identifiers ("2pm EST" in sample #5 flickered in and out of
-`other` between runs). Nothing else changed. Side effect: the "product or feature names" example under `other` now pulls tokens
-like `Okta` and `audit logs` into `identifiers.other`. They're verbatim and harmless, so I left it.
-`meta.prompt_version` is `v2` (the prompt set: classify v1 + enrich v2); records produced before
-the change carry `v1`.
+`other` between runs). Nothing else changed. Side effect: the "product or feature names" example
+under `other` now pulls tokens like `Okta` and `audit logs` into `identifiers.other`. They're
+verbatim and harmless, so I left it.
+
+`meta.prompt_version` versions the prompt set as a whole: `v2` is classify v2 + enrich v2.
+Records produced before the change carry `v1`.
 
 ## Validation
 
