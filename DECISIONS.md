@@ -48,6 +48,40 @@ One-line rationale per decision made while building.
   scaffold placeholder — `escalate.js`'s `outage_signal` rule reads `signals.*` directly, so an
   unsupported true value would silently trigger escalation on nothing; same discipline `urgency`
   already had.
+- 2026-09-29 — Workflow is 8 n8n nodes in 4 labelled stages (Intake, Classify, Enrich,
+  Route & Escalate), not CLAUDE.md's original 11 steps. The brief values a clear 4-step workflow
+  over a complex 10-step one; the logic is unchanged, it's just grouped into 3 Code nodes
+  (`prepare.js`, `check_classification.js`, `decide.js`), one file each, with small tested
+  functions inside. Dropped the "valid?" IF node.
+- 2026-09-29 — No IF node for empty input: it flows through the LLM calls like anything else, and
+  the Code nodes ignore whatever the model returns for it (`classification_skipped` /
+  `enrichment_skipped`) and file it in the Escalation Queue with `processing_failure`. Costs 2
+  Gemini calls on a rare path; buys a straight-line workflow.
+- 2026-09-29 — Gemini request bodies are built in the Code node before each HTTP call. Prompt text
+  is copied into a marked GENERATED block of `prepare.js` / `check_classification.js` by
+  `scripts/sync_prompts.js`, so `prompts/*.md` stays the single source of truth. n8n can't read
+  repo files at runtime, and pasting prompts into an HTTP node body breaks because
+  `{{placeholders}}` collide with n8n's `{{ }}` expression syntax. A unit test fails if the
+  copies drift.
+- 2026-09-29 — `request_id` uses a pure-JS FNV-1a 64-bit hash, not `crypto`: n8n 2.x's Code
+  sandbox blocks `require('crypto')` without `NODE_FUNCTION_ALLOW_BUILTIN`, and a dedupe key
+  doesn't need a cryptographic hash. Hashed over lowercased, whitespace-collapsed text so
+  trivially different resubmissions share an id.
+- 2026-09-29 — Priority floor (Incident/Outage => High) is applied in `check_classification.js`
+  and logged as a `priority_floor_applied` warning, so the model's original proposal stays visible.
+- 2026-09-29 — Billing amounts must appear as numbers in the message (after stripping commas) or
+  they're nulled + logged. That makes "the model must not assume billing periods" enforceable:
+  a model computing 980×12 = 11760 gets caught. `discrepancy` is computed in `decide.js`.
+- 2026-09-29 — A true `signals.*` value with no verbatim evidence is downgraded to false (logged),
+  since it feeds `outage_signal` directly.
+- 2026-09-29 — A failed classification is still enriched (category "Unclassified") so the human
+  reviewer gets a summary.
+- 2026-09-29 — The HTTP nodes replace the item's JSON with Gemini's response, so the next Code node
+  reads the running record back via `$('Prepare')` / `$('Check Classification')`. Node names in
+  n8n must match those strings exactly.
+- 2026-09-29 — Escalation split is a visible Switch node (on `escalated`) feeding two Google Sheets
+  nodes, not one Sheets node with the tab name as an expression. Costs one node, but the
+  escalation branch and its item counts are visible on the canvas / in the Loom.
 
 ## What the AI got wrong
 
@@ -59,6 +93,17 @@ One-line rationale per decision made while building.
   fences only (e.g. by line number or by only ever preceding a known content line), or just
   used Edit on each occurrence instead of a blanket sed across a file with paired delimiters.
 
-What it did, why it was wrong, the fix. Populated as mistakes happen and get corrected.
+- 2026-09-29 — First Block 2 design mapped CLAUDE.md's 11 pipeline steps 1:1 to n8n nodes and then
+  added more (2 request-builder nodes, an IF, a flatten node, a Switch, 2 Sheets nodes): ~16 nodes.
+  Wrong because the brief explicitly says a clean 4-step workflow beats a complex 10-step one;
+  the user caught it. Fix: regrouped the same logic into 8 nodes / 4 stages with one Code file
+  per node (see Design decisions). Should have checked the brief's guidance on workflow size
+  before treating the spec's step list as a node list.
 
-(none yet)
+- 2026-09-29 — When collapsing the workflow, replaced the Switch + 2 Sheets nodes with a single
+  Sheets node whose tab was an expression (`{{ $json.sheet_tab }}`). Fewer nodes, but it hid the
+  escalation decision (a core requirement) from the canvas, which is what reviewers watch in the
+  Loom. User overrode it. Fix: restored a visible Switch with two named branches. Lesson:
+  "simple" means easy to follow visually, not minimum node count.
+
+What it did, why it was wrong, the fix. Populated as mistakes happen and get corrected.

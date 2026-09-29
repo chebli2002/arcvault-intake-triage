@@ -30,17 +30,27 @@ The brief explicitly prefers a clean, well-explained workflow over an over-engin
 
 ## Pipeline (n8n nodes)
 
+10 nodes in 4 stages (one sticky note per stage on the canvas). One Code file per Code node.
+
+**1. Intake**
 1. Webhook `POST /arcvault/intake` body `{source, message}`
-2. Normalize & Validate (Code) — trim, reject empty, `request_id` = hash(source + normalized message), `received_at`
-3. LLM Classify (HTTP Request -> Gemini) — retry 2x
-4. Validate Classification (Code) — enum + range checks; failure => `classification_failed`, escalate
-5. LLM Enrich & Summarize (HTTP Request -> Gemini) — retry 2x
-6. Validate Enrichment (Code) — schema check + verbatim identifier check (drop + log non-verbatim)
-7. Route (Code) — category -> intended_queue via explicit map
-8. Escalation Rules (Code) — sets escalated, reasons[], final_queue
-9. Assemble Record (Code)
-10. Switch on escalated -> Sheets tab
-11. Respond to Webhook with the record
+2. Prepare (Code, `prepare.js`) — trim, flag empty, `request_id` = hash(source + normalized message),
+   `received_at`, build the Classify request body
+
+**2. Classify**
+3. LLM Classify (HTTP Request -> Gemini) — retry 2x, On Error: Continue
+4. Check Classification (Code, `check_classification.js`) — enum + range checks (failure =>
+   `classification_failed`), priority floor, build the Enrich request body
+
+**3. Enrich**
+5. LLM Enrich & Summarize (HTTP Request -> Gemini) — retry 2x, On Error: Continue
+
+**4. Route & Escalate**
+6. Decide (Code, `decide.js`) — validate enrichment (verbatim identifiers, drop + log), route,
+   escalation rules, assemble the record, flatten a sheet row
+7. Switch on `escalated` — two visible branches, `Routed` / `Escalation Queue`
+8. Google Sheets append -> `Routed` tab; 9. Google Sheets append -> `Escalation Queue` tab
+10. Respond to Webhook with the record
 
 Any failure path produces a record in the Escalation Queue with a reason. Nothing is dropped silently.
 
@@ -104,16 +114,18 @@ evidence quoted from the message. `billing.discrepancy` is computed by code, nev
 CLAUDE.md  README.md  ARCHITECTURE.md  PROMPTS.md  DECISIONS.md
 prompts/        classify.v1.md, enrich.v1.md
 schemas/        classification.schema.json, enrichment.schema.json
-n8n/code/       normalize.js, validate_classification.js, validate_enrichment.js,
-                route.js, escalate.js, assemble.js   (source of truth; pasted into n8n Code nodes)
+n8n/code/       prepare.js, check_classification.js, decide.js
+                (one file per Code node; source of truth, pasted whole into n8n)
 n8n/workflow.json   (exported from n8n UI)
 tests/          samples.json (5 official), edge_cases.json, expected.json (oracle, written BEFORE running)
-scripts/        prompt_check.py (calls Gemini directly, no n8n), send_samples.sh (curl to webhook)
+scripts/        prompt_check.py (calls Gemini directly, no n8n), send_samples.sh (curl to webhook),
+                sync_prompts.js (copies prompts/ + schemas/ into the Code node files)
 outputs/        outputs.json
 ```
 
-Code node files should export pure functions so routing/escalation can be tested with plain
-`node` and no n8n running. Keep the n8n-specific wrapper (`$input.all()` -> `return items`) thin.
+Code node files export pure functions so routing/escalation can be tested with plain `node`
+(`node --test tests/code.test.js`) and no n8n running. The n8n wrapper at the bottom of each file
+(`if (typeof $json !== 'undefined') return { json: ... }`) stays thin.
 
 ## Expected results (oracle)
 

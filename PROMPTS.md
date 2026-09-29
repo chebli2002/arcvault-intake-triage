@@ -5,8 +5,8 @@ explanation of why it's structured that way — what tradeoffs were made and wha
 with more time.
 
 `prompts/classify.v1.md` and `prompts/enrich.v1.md` are the source of truth (what
-`scripts/prompt_check.py` and the n8n HTTP nodes actually load) — the text below is a copy for
-readability; the two are kept in sync by hand.
+`scripts/prompt_check.py` loads, and what `scripts/sync_prompts.js` copies into the n8n Code
+nodes) — the text below is a copy for readability; the two are kept in sync by hand.
 
 Both calls use `gemini-3.5-flash-lite`, `temperature: 0`, `thinkingConfig.thinkingLevel: "LOW"`
 (the lowest setting this model supports — it rejects `thinkingBudget: 0` outright, so thinking
