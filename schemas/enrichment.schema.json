@@ -1,5 +1,57 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$comment": "TODO (Block 1). Gemini responseSchema for the Enrich & Summarize call. Excludes billing.discrepancy — that field is computed in code, never by the LLM. See CLAUDE.md Output record shape.",
-  "type": "object"
+  "type": "OBJECT",
+  "properties": {
+    "core_issue": {
+      "type": "STRING",
+      "description": "One sentence stating what the customer is reporting or asking for."
+    },
+    "identifiers": {
+      "type": "OBJECT",
+      "properties": {
+        "account_ids": { "type": "ARRAY", "items": { "type": "STRING" } },
+        "invoice_numbers": { "type": "ARRAY", "items": { "type": "STRING" } },
+        "error_codes": { "type": "ARRAY", "items": { "type": "STRING" } },
+        "amounts": { "type": "ARRAY", "items": { "type": "STRING" } },
+        "other": { "type": "ARRAY", "items": { "type": "STRING" } }
+      },
+      "required": ["account_ids", "invoice_numbers", "error_codes", "amounts", "other"],
+      "propertyOrdering": ["account_ids", "invoice_numbers", "error_codes", "amounts", "other"],
+      "description": "Every value must be a verbatim substring of the raw message. Verified in code, not trusted from the model."
+    },
+    "billing": {
+      "type": "OBJECT",
+      "properties": {
+        "charged_amount": { "type": "NUMBER", "nullable": true },
+        "expected_amount": { "type": "NUMBER", "nullable": true }
+      },
+      "required": ["charged_amount", "expected_amount"],
+      "propertyOrdering": ["charged_amount", "expected_amount"],
+      "description": "Numeric values only, no currency symbol. No discrepancy field - that is computed in code, never by the model."
+    },
+    "urgency": {
+      "type": "OBJECT",
+      "properties": {
+        "level": { "type": "STRING", "enum": ["Low", "Medium", "High"] },
+        "evidence": { "type": "ARRAY", "items": { "type": "STRING" } }
+      },
+      "required": ["level", "evidence"],
+      "propertyOrdering": ["level", "evidence"]
+    },
+    "signals": {
+      "type": "OBJECT",
+      "properties": {
+        "multiple_users_affected": { "type": "BOOLEAN" },
+        "service_unavailable": { "type": "BOOLEAN" },
+        "evidence": { "type": "ARRAY", "items": { "type": "STRING" } }
+      },
+      "required": ["multiple_users_affected", "service_unavailable", "evidence"],
+      "propertyOrdering": ["multiple_users_affected", "service_unavailable", "evidence"]
+    },
+    "summary": {
+      "type": "STRING",
+      "description": "2-3 plain-English sentences for the receiving team."
+    }
+  },
+  "required": ["core_issue", "identifiers", "billing", "urgency", "signals", "summary"],
+  "propertyOrdering": ["core_issue", "identifiers", "billing", "urgency", "signals", "summary"]
 }

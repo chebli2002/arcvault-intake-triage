@@ -1,5 +1,23 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$comment": "TODO (Block 1). Gemini responseSchema for the Classify call. Enums per CLAUDE.md.",
-  "type": "object"
+  "type": "OBJECT",
+  "properties": {
+    "category": {
+      "type": "STRING",
+      "enum": ["Bug Report", "Feature Request", "Billing Issue", "Technical Question", "Incident/Outage"]
+    },
+    "priority": {
+      "type": "STRING",
+      "enum": ["Low", "Medium", "High"]
+    },
+    "confidence": {
+      "type": "NUMBER",
+      "description": "Calibrated certainty in the category assignment, 0.0-1.0. Range is enforced in code, not by this schema."
+    },
+    "rationale": {
+      "type": "STRING",
+      "description": "One sentence citing the specific words or phrases in the message that drove the category and priority."
+    }
+  },
+  "required": ["category", "priority", "confidence", "rationale"],
+  "propertyOrdering": ["category", "priority", "confidence", "rationale"]
 }
