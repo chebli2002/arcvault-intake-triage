@@ -161,6 +161,6 @@ test('record has exactly the locked top-level shape; sheet row has every column'
 
 test('prompt constants in the node files match prompts/*.md (run scripts/sync_prompts.js if not)', () => {
   const md = (f) => fs.readFileSync(path.join(__dirname, '..', 'prompts', f), 'utf8');
-  assert.ok(md('classify.v1.md').replace(/\n/g, ' ').includes(CLASSIFY_SYSTEM.replace(/\n/g, ' ')));
-  assert.ok(md('enrich.v1.md').replace(/\n/g, ' ').includes(ENRICH_SYSTEM.replace(/\n/g, ' ')));
+  assert.ok(md('classify.v2.md').replace(/\n/g, ' ').includes(CLASSIFY_SYSTEM.replace(/\n/g, ' ')));
+  assert.ok(md('enrich.v2.md').replace(/\n/g, ' ').includes(ENRICH_SYSTEM.replace(/\n/g, ' ')));
 });

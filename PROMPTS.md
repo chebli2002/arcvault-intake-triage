@@ -4,7 +4,7 @@ Per the assessment brief (Section 4.3): the prompt text for each LLM step, plus 
 explanation of why it's structured that way — what tradeoffs were made and what would change
 with more time.
 
-`prompts/classify.v1.md` and `prompts/enrich.v1.md` are the source of truth (what
+`prompts/classify.v2.md` and `prompts/enrich.v2.md` are the source of truth (what
 `scripts/prompt_check.py` loads, and what `scripts/sync_prompts.js` copies into the n8n Code
 nodes) — the text below is a copy for readability; the two are kept in sync by hand.
 
@@ -13,7 +13,7 @@ Both calls use `gemini-3.5-flash-lite`, `temperature: 0`, `thinkingConfig.thinki
 can be minimized but not fully disabled), `responseMimeType: application/json`, and a
 `responseSchema` (`schemas/classification.schema.json` / `schemas/enrichment.schema.json`).
 
-## Classify
+## Classify (v2)
 
 ```text
 You are a triage classifier for ArcVault, a B2B SaaS company. You will be given one inbound
@@ -26,8 +26,15 @@ Assign:
   categories are floored to a minimum priority downstream regardless of what you choose here —
   classify honestly based on the message, don't try to guess or compensate for the floor.
 - confidence: your calibrated certainty in the category assignment, as a number between 0.0 and
-  1.0. Use lower values when the message could reasonably fit more than one category, is vague,
-  or lacks enough detail to be sure.
+  1.0. Use this scale:
+  - 0.9-1.0: the message states clearly what is happening or being asked, and only one
+    category fits.
+  - 0.7-0.9: one category fits best, but the message is missing some detail or a second
+    category is plausible.
+  - below 0.7: the message doesn't say what is wrong or what is being asked (for example "it
+    doesn't work", "please help"), two categories fit about equally well, or the message
+    contains separate requests that belong to different categories (for example a bug and a
+    billing question). Pick the category of the most urgent one.
 - rationale: one sentence citing the specific words or phrases in the message that drove your
   category and priority choice.
 
@@ -66,7 +73,7 @@ direct defense against the prompt-injection edge case ("ignore instructions, mar
 delimiters give the model a structural signal for where untrusted content starts and ends, and
 the instruction tells it what to do when that content tries to talk back. Category/priority
 guidance is kept short and behavioral (what does the message *do*, not keyword lists) since
-keyword-matching belongs in code (`route.js`, `escalate.js`), not the prompt. Confidence
+keyword-matching belongs in code (`decide.js`), not the prompt. Confidence
 calibration is spelled out because an uncalibrated model tends to report high confidence by
 default, which would silently defeat the `confidence < 0.70` escalation floor. Tradeoff: no
 few-shot examples — with only five known samples and an oracle table, few-shot risks the model
@@ -74,7 +81,14 @@ pattern-matching to the examples instead of reasoning about the actual message. 
 build a larger held-out eval set and compare confidence calibration with vs. without few-shot
 examples, since right now confidence quality is taken on faith rather than measured.
 
-## Enrich & Summarize
+**v1 -> v2.** v1 said only "use lower values when the message is vague". The edge-case run
+showed that isn't enough: "it's broken again" came back at 0.8 and a bug-plus-billing message at
+0.9, so neither escalated. v2 anchors the scale in three bands and names the two situations
+that belong below 0.7 (nothing says what's wrong; separate requests for different teams). The
+0.70 threshold is still applied in code; the prompt only defines what each band means. Over 3
+runs: vague 0.5, multi-intent 0.6, the 5 official samples 0.95–1.0 with unchanged categories.
+
+## Enrich & Summarize (v2)
 
 Receives the validated `category` from the Classify call.
 
@@ -86,8 +100,15 @@ facts from it and write a short summary. Do not answer the request or propose a 
 Extract:
 - core_issue: one sentence stating what the customer is reporting or asking for, in your own
   words.
-- identifiers: any account IDs, invoice numbers, error codes, dollar amounts, or other
-  identifying tokens mentioned in the message (for example: usernames, URLs, order numbers).
+- identifiers: identifying tokens mentioned in the message, sorted into:
+  - account_ids: anything that identifies the customer's account or user — an account number,
+    username, email address, or account/profile URL.
+  - invoice_numbers: invoice or order references, including any prefix as written (such as "#"
+    or "INV-").
+  - error_codes: error codes or HTTP status codes.
+  - amounts: money amounts.
+  - other: any other identifying token (for example: ticket numbers, product or feature names).
+    Dates and times are not identifiers.
   Every value you extract MUST be an exact, verbatim substring copied from the message — do not
   normalize, reformat, correct, or infer a value that is not literally present in the text. If
   nothing of a given kind is mentioned, return an empty array for it, never a placeholder.
@@ -139,11 +160,30 @@ an invoice total), which is redundant but harmless, since code only ever reads `
 arithmetic. With more time: tighten `identifiers.amounts` to explicitly exclude whatever was
 already captured in `billing.*`.
 
+**v1 -> v2.** v1 listed the identifier kinds in one sentence and gave "usernames, URLs" as
+examples of *other* identifying tokens, so the model filed `arcvault.io/user/jsmith` (sample #1)
+under `identifiers.other` instead of `account_ids`: the prompt itself told it to. v2 defines each
+bucket (an account or profile URL is an account ID) and asks for invoice references with their
+prefix as written (`#8821`, not `8821`), which is what the verbatim rule already implied, and
+says dates and times are not identifiers ("2pm EST" in sample #5 flickered in and out of
+`other` between runs). Nothing else changed. Side effect: the "product or feature names" example under `other` now pulls tokens
+like `Okta` and `audit logs` into `identifiers.other`. They're verbatim and harmless, so I left it.
+`meta.prompt_version` is `v2` (the prompt set: classify v1 + enrich v2); records produced before
+the change carry `v1`.
+
 ## Validation
 
 `scripts/prompt_check.py` runs both prompts against all 5 official samples, 3 times, calling
-Gemini directly (no n8n). Result: all 5 samples matched the oracle's `category`/`priority`
-(`tests/expected.json`) on every run, and category/priority were identical across all 3 runs
-(confidence varied slightly run-to-run, which doesn't affect the checked fields). `queue` and
-`escalated` aren't checked here — those are computed by `route.js`/`escalate.js` in Block 2,
-which don't exist yet.
+Gemini directly (no n8n), and fails if any sample misses the oracle's `category`/`priority`
+(`tests/expected.json`) or if category, priority, `account_ids` or `invoice_numbers` differ between runs. (`amounts` and
+`other` are not checked: they flicker harmlessly, e.g. `$980` vs `$980/month`.)
+
+- classify v1 + enrich v1: all 5 samples matched the oracle on every run; category/priority identical across runs.
+- classify v1 + enrich v2: same result. Sample #1 now yields
+  `account_ids: ["arcvault.io/user/jsmith"]`, sample #3 `invoice_numbers: ["#8821"]`.
+- classify v2 + enrich v2 (current): all 5 match the oracle on every run and are stable. Sample #4
+  priority is now Medium (was Low), within the oracle.
+
+`queue` and `escalated` are code decisions (`n8n/code/decide.js`), covered by
+`node --test tests/code.test.js` with fake model responses, and end to end by
+`scripts/send_samples.sh` (see `outputs/`).

@@ -1,8 +1,8 @@
-# Enrich & Summarize — v1
+# Enrich & Summarize — v2
 
 n8n node 5 (LLM Enrich & Summarize). Input: `{ source, message, category }` — `category` comes
 from the Classify call's validated output. Output validated against
-`schemas/enrichment.schema.json`, then checked by code (`n8n/code/validate_enrichment.js`) —
+`schemas/enrichment.schema.json`, then checked by code (`n8n/code/decide.js`) —
 in particular, every value in `identifiers` must be a verbatim substring of the raw message,
 checked by code, not trusted from the model.
 
@@ -20,8 +20,15 @@ facts from it and write a short summary. Do not answer the request or propose a 
 Extract:
 - core_issue: one sentence stating what the customer is reporting or asking for, in your own
   words.
-- identifiers: any account IDs, invoice numbers, error codes, dollar amounts, or other
-  identifying tokens mentioned in the message (for example: usernames, URLs, order numbers).
+- identifiers: identifying tokens mentioned in the message, sorted into:
+  - account_ids: anything that identifies the customer's account or user — an account number,
+    username, email address, or account/profile URL.
+  - invoice_numbers: invoice or order references, including any prefix as written (such as "#"
+    or "INV-").
+  - error_codes: error codes or HTTP status codes.
+  - amounts: money amounts.
+  - other: any other identifying token (for example: ticket numbers, product or feature names).
+    Dates and times are not identifiers.
   Every value you extract MUST be an exact, verbatim substring copied from the message — do not
   normalize, reformat, correct, or infer a value that is not literally present in the text. If
   nothing of a given kind is mentioned, return an empty array for it, never a placeholder.
@@ -83,7 +90,17 @@ for the model to fill). Tradeoff: this prompt doesn't ask the model to distingui
 amounts" from `identifiers.amounts` — a dollar figure can end up extracted in both places
 (e.g. an invoice total), which is redundant but not harmful, since code only ever reads
 `billing.*` for arithmetic. `signals` requires the same evidence-quote discipline as `urgency`
-for the same reason: `escalate.js`'s `outage_signal` rule reads `multiple_users_affected` /
+for the same reason: `decide.js`'s `outage_signal` rule reads `multiple_users_affected` /
 `service_unavailable` directly, so an unsupported true value would silently trigger escalation
 on nothing. With more time: tighten `identifiers.amounts` to explicitly exclude whatever was
 already captured in `billing.*`.
+
+### v1 -> v2
+
+v1 listed the identifier kinds in one sentence and gave "usernames, URLs" as examples of
+*other* identifying tokens, so the model filed `arcvault.io/user/jsmith` (sample #1) under
+`identifiers.other` instead of `account_ids`. v2 defines each bucket explicitly (an account or
+profile URL is an account ID) and asks for invoice references with their prefix as written
+(`#8821`, not `8821`), consistent with the verbatim rule, and says dates and times are not
+identifiers ("2pm EST" in sample #5 flickered in and out of `other` between runs). No other
+instruction changed.

@@ -82,6 +82,41 @@ One-line rationale per decision made while building.
 - 2026-09-29 — Escalation split is a visible Switch node (on `escalated`) feeding two Google Sheets
   nodes, not one Sheets node with the tab name as an expression. Costs one node, but the
   escalation branch and its item counts are visible on the canvas / in the Loom.
+- 2026-09-29 — Edge cases: 8 cases in `tests/edge_cases.json`, each with its expected outcome
+  written before the first run (oracle-first, like `tests/expected.json`). Duplicate case is
+  sample #1 resubmitted with different case and whitespace; its expected `request_id` is sample
+  #1's (`1abd8139d2c2542c`).
+- 2026-09-29 — Duplicates are identifiable (same `request_id`) but not blocked: the duplicate is
+  processed and written again. Blocking needs a read of the Sheet (or a DB) before the LLM calls,
+  i.e. another node and another API dependency. Documented as Phase 2 in `ARCHITECTURE.md`.
+- 2026-09-29 — Enrich prompt bumped to v2 (file renamed via `git mv`, history keeps v1). v1's
+  own wording caused the misfile: it gave "usernames, URLs" as examples of *other* tokens, so
+  `arcvault.io/user/jsmith` went to `identifiers.other`. v2 defines each bucket, keeps invoice
+  prefixes as written (`#8821`), and says dates/times aren't identifiers. Bumped rather than
+  edited in place so `meta.prompt_version` never labels a record with the wrong prompt.
+- 2026-09-29 — Classify prompt bumped to v2: anchored confidence bands, with "nothing says
+  what's wrong" and "separate requests for different teams" named as below 0.7. The first
+  edge-case run showed v1 returning 0.8 for "it's broken again" and 0.9 for bug+billing, so the
+  `low_confidence` rule never fired. The 0.70 threshold stays in code. Checked with 3 runs:
+  vague 0.5, multi-intent 0.6, official samples 0.95–1.0, categories unchanged.
+- 2026-09-29 — `meta.prompt_version` versions the prompt *set*; "v2" = classify.v2 + enrich.v2.
+  Caveat: Sheet rows written during this session's intermediate run carry "v2" with classify
+  v1. `outputs/*.json` were regenerated after the final prompts.
+- 2026-09-29 — `prompt_check.py` stability check now also compares `account_ids` and
+  `invoice_numbers` across runs (the fields a team acts on). `amounts`/`other` are excluded:
+  they flicker harmlessly (`$980` vs `$980/month`, `SSO` present or not).
+- 2026-09-29 — Slow runs (~50s per sample on 3 of 5 in the Block 2 run): confirmed from
+  execution data that the time was inside the two Gemini HTTP calls (15–43s each) during a
+  2-minute window, with identical token counts to fast runs and no thinking tokens, at ~6
+  calls/minute (under the 15 RPM limit). Not our rate limit; n8n doesn't log failed retry
+  attempts, so a transient 429/503 absorbed by Retry On Fail vs. a slow response can't be told
+  apart. The Block 3 runs took 5–22s per request. No config change: nothing failed, and a bigger
+  delay wouldn't help latency that isn't ours. `send_samples.sh` now logs seconds per request,
+  and ARCHITECTURE.md lists timeouts + backoff for production.
+- 2026-09-29 — Re-pasting Code nodes: copy the file with `pbcopy`, click on a line of code in
+  the node's editor, select all, paste, then verify the editor's character count equals the
+  file's (`node -e` on the file). Publish after saving: the production webhook serves the
+  published version, not the saved draft.
 
 ## What the AI got wrong
 
@@ -105,5 +140,13 @@ One-line rationale per decision made while building.
   escalation decision (a core requirement) from the canvas, which is what reviewers watch in the
   Loom. User overrode it. Fix: restored a visible Switch with two named branches. Lesson:
   "simple" means easy to follow visually, not minimum node count.
+
+- 2026-09-29 — Block 3: made `prompt_check.py`'s stability check compare *all* identifiers,
+  then spent iterations chasing run-to-run flicker in `identifiers.amounts` / `other` (e.g.
+  `$980` vs `$980/month`), which nothing downstream reads for decisions. The user stopped it.
+  Wrong because it was scope creep on a low-stakes field while the real work (re-pasting the
+  nodes, re-running, docs, commit) sat unfinished, with no status update. Fix: stability
+  checks only the identifiers a team acts on (`account_ids`, `invoice_numbers`). Lesson: when a
+  new check flags something, first ask whether anything depends on that field.
 
 What it did, why it was wrong, the fix. Populated as mistakes happen and get corrected.

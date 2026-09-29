@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Calls Gemini directly (no n8n) with prompts/classify.v1.md and prompts/enrich.v1.md
+"""Calls Gemini directly (no n8n) with prompts/classify.v2.md and prompts/enrich.v2.md
 against tests/samples.json, to check outputs are stable and match tests/expected.json
 before wiring anything into n8n.
 
-Checks category/priority only against the oracle - queue/escalated are computed by
-n8n/code/route.js and escalate.js, which don't exist yet (Block 2).
+Checks category/priority against the oracle, and that category/priority/account_ids/invoice_numbers
+are stable across runs. queue/escalated are code decisions (n8n/code/decide.js), tested elsewhere.
 
 Zero third-party dependencies on purpose (stdlib only) - this is a throwaway sanity check,
 not part of the shipped pipeline.
@@ -134,8 +134,8 @@ def main() -> None:
     expected = json.loads((ROOT / "tests" / "expected.json").read_text())
     expected_by_id = {item["id"]: item for item in expected}
 
-    classify_system, classify_template = load_prompt(ROOT / "prompts" / "classify.v1.md")
-    enrich_system, enrich_template = load_prompt(ROOT / "prompts" / "enrich.v1.md")
+    classify_system, classify_template = load_prompt(ROOT / "prompts" / "classify.v2.md")
+    enrich_system, enrich_template = load_prompt(ROOT / "prompts" / "enrich.v2.md")
     prompts = {
         "classify_system": classify_system,
         "classify_template": classify_template,
@@ -169,9 +169,14 @@ def main() -> None:
     for idx, sample in enumerate(samples):
         categories = {run[idx]["classification"].get("category") for run in runs}
         priorities = {run[idx]["classification"].get("priority") for run in runs}
-        if len(categories) > 1 or len(priorities) > 1:
+        # Only the identifiers a team acts on; amounts/other flicker harmlessly ("$980" vs "$980/month").
+        identifiers = {json.dumps({k: run[idx]["enrichment"].get("identifiers", {}).get(k)
+                                   for k in ("account_ids", "invoice_numbers")}, sort_keys=True) for run in runs}
+        if len(categories) > 1 or len(priorities) > 1 or len(identifiers) > 1:
             stable = False
             print(f"  #{sample['id']} UNSTABLE: categories={categories} priorities={priorities}")
+            for ids in identifiers:
+                print(f"      identifiers={ids}")
     if stable:
         print("  All samples stable across all runs.")
 

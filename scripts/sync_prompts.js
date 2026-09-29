@@ -17,8 +17,8 @@ function extractFenced(text, heading) {
 }
 
 const TARGETS = [
-  { file: 'prepare.js', prompt: 'classify.v1.md', schema: 'classification.schema.json', prefix: 'CLASSIFY' },
-  { file: 'check_classification.js', prompt: 'enrich.v1.md', schema: 'enrichment.schema.json', prefix: 'ENRICH' },
+  { file: 'prepare.js', prompt: 'classify.v2.md', schema: 'classification.schema.json', prefix: 'CLASSIFY' },
+  { file: 'check_classification.js', prompt: 'enrich.v2.md', schema: 'enrichment.schema.json', prefix: 'ENRICH' },
 ];
 
 for (const t of TARGETS) {

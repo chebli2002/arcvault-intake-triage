@@ -112,7 +112,7 @@ evidence quoted from the message. `billing.discrepancy` is computed by code, nev
 
 ```
 CLAUDE.md  README.md  ARCHITECTURE.md  PROMPTS.md  DECISIONS.md
-prompts/        classify.v1.md, enrich.v1.md
+prompts/        classify.v2.md, enrich.v2.md
 schemas/        classification.schema.json, enrichment.schema.json
 n8n/code/       prepare.js, check_classification.js, decide.js
                 (one file per Code node; source of truth, pasted whole into n8n)

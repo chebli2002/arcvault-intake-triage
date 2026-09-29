@@ -199,7 +199,8 @@ function escalationReasons({ message, valid, classification, classification_fail
 // ---------- Assemble (exact CLAUDE.md output shape) + sheet row ----------
 
 const MODEL = 'gemini-3.5-flash-lite';
-const PROMPT_VERSION = 'v1';
+// Version of the prompt set (prompts/classify.v2.md + prompts/enrich.v2.md).
+const PROMPT_VERSION = 'v2';
 
 function decide(record, response) {
   const e = validateEnrichment(record, response);

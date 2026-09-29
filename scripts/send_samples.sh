@@ -21,8 +21,9 @@ trap 'rm -f "$tmp"' EXIT
 for i in $(seq 0 $((count - 1))); do
   body=$(jq -c ".[$i] | {source, message}" "$SAMPLES")
   echo "[$((i + 1))/$count] $(jq -r ".[$i].message // \"<null>\" | .[0:60]" "$SAMPLES")..." >&2
+  start=$SECONDS
   resp=$(curl -sS --fail-with-body -X POST "$URL" -H 'Content-Type: application/json' -d "$body")
-  echo "$resp" | jq -c '{category: .classification.category, priority: .classification.priority,
+  echo "$resp" | jq -c --arg s "$((SECONDS - start))" '{seconds: ($s | tonumber), category: .classification.category, priority: .classification.priority,
     confidence: .classification.confidence, final_queue: .routing.final_queue,
     reasons: .escalation.reasons}' >&2
   echo "$resp" >> "$tmp"
