@@ -22,7 +22,7 @@ The brief explicitly prefers a clean, well-explained workflow over an over-engin
 | Decision | Choice |
 |---|---|
 | Orchestration | n8n, self-hosted via Docker |
-| LLM | Gemini, Flash-Lite tier (free-tier quota; Flash tier has very low RPD). Temperature 0, lowest thinking level, `responseMimeType: application/json` + `responseSchema` |
+| LLM | Gemini, Flash-Lite tier: `gemini-3.5-flash-lite` (pinned, not the `-latest` alias — reproducibility). Temperature 0, lowest thinking level, `responseMimeType: application/json` + `responseSchema` |
 | LLM calls | 2 per request: (1) Classify, (2) Enrich + Summarize (receives category from call 1) |
 | Storage | Google Sheets: tabs `Routed` and `Escalation Queue`; plus `outputs/outputs.json` |
 | Priority | LLM proposes; code enforces floors (Incident/Outage => High) |

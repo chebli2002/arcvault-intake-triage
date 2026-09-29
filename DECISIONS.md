@@ -15,6 +15,18 @@ One-line rationale per decision made while building.
   scaffolded files (`prompts/`, `schemas/`, `n8n/code/`, `tests/edge_cases.json`, `scripts/`)
   are left as placeholders — writing their real content is prompt/schema/logic design work
   that belongs to later blocks, not the scaffold.
+- 2026-09-29 — Pinned Gemini model to `gemini-3.5-flash-lite`, not the `gemini-flash-lite-latest`
+  alias. Confirmed via curl that the alias currently resolves to this exact version. Pinning
+  the concrete name avoids Google silently repointing the alias mid-project, which would risk
+  the "stable across 3 runs" requirement on prompt outputs. Also observed the response includes
+  a `thoughtSignature` (thinking enabled by default on this model) — Block 1 needs to set
+  `thinkingConfig` to the lowest level explicitly, per the locked "lowest thinking level" decision.
+- 2026-09-29 — Google Sheets OAuth: used the standard OAuth2 client-credentials path (not the
+  Service Account fallback) since it connected inside the 20-minute budget once the account was
+  added as an OAuth test user. Created the target spreadsheet "ArcVault Intake & Triage"
+  (id `1f0sMcKyExYoyptDIolI0jgdt13_UCbE54JpASu0xwF0`) with tabs `Routed` and `Escalation Queue`,
+  no headers yet — those get added in Block 2 once `assemble.js`'s exact record shape is final,
+  to avoid having to redo them.
 
 ## What the AI got wrong
 
