@@ -1,0 +1,43 @@
+[
+  {
+    "id": 1,
+    "description": "403 login",
+    "category": "Bug Report",
+    "priority": "High",
+    "queue": "Engineering",
+    "escalated": false
+  },
+  {
+    "id": 2,
+    "description": "bulk export",
+    "category": "Feature Request",
+    "priority": ["Low", "Medium"],
+    "queue": "Product",
+    "escalated": false
+  },
+  {
+    "id": 3,
+    "description": "invoice $1,240 vs $980",
+    "category": "Billing Issue",
+    "priority": ["Medium", "High"],
+    "queue": "Billing",
+    "escalated": false,
+    "note": "discrepancy $260, under the $500 escalation threshold"
+  },
+  {
+    "id": 4,
+    "description": "Okta SSO",
+    "category": "Technical Question",
+    "priority": ["Low", "Medium"],
+    "queue": "Customer Support",
+    "escalated": "only if confidence < 0.70"
+  },
+  {
+    "id": 5,
+    "description": "dashboard down",
+    "category": "Incident/Outage",
+    "priority": "High",
+    "queue": "Escalation Queue",
+    "escalated": true
+  }
+]

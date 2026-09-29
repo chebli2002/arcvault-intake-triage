@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "TODO (Block 1). Gemini responseSchema for the Enrich & Summarize call. Excludes billing.discrepancy — that field is computed in code, never by the LLM. See CLAUDE.md Output record shape.",
+  "type": "object"
+}

@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "TODO (Block 1). Gemini responseSchema for the Classify call. Enums per CLAUDE.md.",
+  "type": "object"
+}
