@@ -5,8 +5,8 @@ deliverable in Section 4 of the brief to where it is.
 
 | Brief | Deliverable | Where |
 |---|---|---|
-| 4.1 | Working workflow | Loom: `<LOOM_LINK>` (all 5 samples processed end to end). Exported workflow: [`n8n/workflow.json`](n8n/workflow.json). Happy to do a live demo in the interview. |
-| 4.2 | Structured output | [`outputs/outputs.json`](outputs/outputs.json) (5 records) and the Google Sheet: `<SHEET_LINK>` (tabs `Routed`, `Escalation Queue`). 8 edge cases: [`outputs/edge_cases.json`](outputs/edge_cases.json). |
+| 4.1 | Working workflow | Loom: https://www.loom.com/share/f96d691aeec241b1896c47dd095dbe7a (all 5 samples processed end to end). Exported workflow: [`n8n/workflow.json`](n8n/workflow.json). Happy to do a live demo in the interview. |
+| 4.2 | Structured output | [`outputs/outputs.json`](outputs/outputs.json) (5 records) and the Google Sheet: https://docs.google.com/spreadsheets/d/1f0sMcKyExYoyptDIolI0jgdt13_UCbE54JpASu0xwF0/edit?usp=sharing (tabs `Routed`, `Escalation Queue`). 8 edge cases: [`outputs/edge_cases.json`](outputs/edge_cases.json). |
 | 4.3 | Prompt documentation | [`PROMPTS.md`](PROMPTS.md): both prompts, why each is structured that way, tradeoffs, what I'd change, and the v1 → v2 changes with the evidence behind them. |
 | 4.4 | Architecture write-up | [`ARCHITECTURE.md`](ARCHITECTURE.md): system design, routing, escalation, production scale, Phase 2. |
 | 7 | "What the AI got wrong" | [`DECISIONS.md`](DECISIONS.md): every design decision with its rationale, and each AI mistake I corrected. |
