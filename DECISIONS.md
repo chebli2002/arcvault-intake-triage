@@ -118,6 +118,11 @@ One-line rationale per decision made while building.
   file's (`node -e` on the file). Publish after saving: the production webhook serves the
   published version, not the saved draft.
 
+- 2026-09-30 — Submission deliverables (brief §4.1–4.4) stay in the repo rather than a separate
+  folder: `SUBMISSION.md` maps each one to its file, so there is a single link to send and the docs
+  can't drift from copies. Before recording the Loom, both Sheet tabs were cleared (headers kept)
+  so the recording shows only the 5 fresh records.
+
 ## What the AI got wrong
 
 - 2026-09-29 — Used `sed 's/^```$/```text/'` to add language tags to the fenced code blocks in

@@ -8,6 +8,8 @@ structured entities, routed to the correct team queue, and escalated to a human 
 confidence is low or an escalation rule fires. Orchestration runs in n8n; classification and
 enrichment run on Gemini (Flash-Lite); structured records land in Google Sheets.
 
+**Reviewers: start with [`SUBMISSION.md`](SUBMISSION.md)**, which maps each deliverable to its file.
+
 `CLAUDE.md` is the source of truth for scope, locked decisions, the exact output record shape,
 routing map, and escalation rules — read it before touching this repo.
 
