@@ -2,13 +2,13 @@
   {
     "request_id": "1abd8139d2c2542c",
     "source": "Email",
-    "received_at": "2026-09-29T15:18:46.876Z",
+    "received_at": "2026-09-30T09:28:28.072Z",
     "raw_message": "Hi, I tried logging in this morning and keep getting a 403 error. My account is arcvault.io/user/jsmith. This started after your update last Tuesday.",
     "classification": {
       "category": "Bug Report",
       "priority": "High",
       "confidence": 0.95,
-      "rationale": "The user states they keep getting a 403 error after an update, indicating something in the product is broken and blocking their access."
+      "rationale": "The user states they keep getting a 403 error after an update, which blocks them from logging in and doing their job."
     },
     "enrichment": {
       "core_issue": "The customer is reporting that they receive a 403 error when trying to log in after the update last Tuesday.",
@@ -49,7 +49,7 @@
       "escalated": false,
       "reasons": []
     },
-    "summary": "The customer attempted to log in this morning and is continuously receiving a 403 error. They note that the issue began following the system update last Tuesday. They have provided their account URL for reference.",
+    "summary": "The customer, user arcvault.io/user/jsmith, is unable to log in and is continuously receiving a 403 error. They note that this issue began following the system update last Tuesday.",
     "meta": {
       "model": "gemini-3.5-flash-lite",
       "prompt_version": "v2",
@@ -59,7 +59,7 @@
   {
     "request_id": "4d88eef344520275",
     "source": "Web Form",
-    "received_at": "2026-09-29T15:19:02.510Z",
+    "received_at": "2026-09-30T09:28:45.375Z",
     "raw_message": "We'd love to see a bulk export feature for our audit logs. We're a compliance-heavy org and this would save us hours every month.",
     "classification": {
       "category": "Feature Request",
@@ -68,13 +68,15 @@
       "rationale": "The user explicitly states 'We'd love to see a bulk export feature', indicating they are asking for new functionality that does not currently exist."
     },
     "enrichment": {
-      "core_issue": "The customer is requesting a bulk export feature for audit logs to help with compliance needs.",
+      "core_issue": "The customer is requesting a bulk export feature for their audit logs to save time on compliance tasks.",
       "identifiers": {
         "account_ids": [],
         "invoice_numbers": [],
         "error_codes": [],
         "amounts": [],
-        "other": []
+        "other": [
+          "audit logs"
+        ]
       },
       "billing": {
         "charged_amount": null,
@@ -84,7 +86,7 @@
       "urgency": {
         "level": "Low",
         "evidence": [
-          "We'd love to see a bulk export feature for our audit logs."
+          "this would save us hours every month"
         ]
       },
       "signals": {
@@ -102,7 +104,7 @@
       "escalated": false,
       "reasons": []
     },
-    "summary": "A compliance-heavy organization is requesting a new bulk export feature for audit logs. They state this addition would save them hours of manual work every month.",
+    "summary": "The customer has submitted a feature request for a bulk export capability for audit logs. They note that they are a compliance-heavy organization and that this addition would save them hours of work each month.",
     "meta": {
       "model": "gemini-3.5-flash-lite",
       "prompt_version": "v2",
@@ -112,16 +114,16 @@
   {
     "request_id": "d4564582b84a7969",
     "source": "Support Portal",
-    "received_at": "2026-09-29T15:19:16.908Z",
+    "received_at": "2026-09-30T09:28:59.563Z",
     "raw_message": "Invoice #8821 shows a charge of $1,240 but our contract rate is $980/month. Can someone look into this?",
     "classification": {
       "category": "Billing Issue",
       "priority": "Medium",
       "confidence": 1,
-      "rationale": "The message mentions an incorrect amount on 'Invoice #8821' compared to the 'contract rate', which clearly indicates a billing problem."
+      "rationale": "The message mentions 'Invoice #8821' and 'charge of $1,240' versus the 'contract rate', which clearly indicates a billing discrepancy."
     },
     "enrichment": {
-      "core_issue": "The customer is reporting an incorrect charge on their invoice that exceeds their contracted rate.",
+      "core_issue": "The customer is reporting an incorrect charge on their invoice and is asking for it to be investigated.",
       "identifiers": {
         "account_ids": [],
         "invoice_numbers": [
@@ -130,7 +132,7 @@
         "error_codes": [],
         "amounts": [
           "$1,240",
-          "$980"
+          "$980/month"
         ],
         "other": []
       },
@@ -160,7 +162,7 @@
       "escalated": false,
       "reasons": []
     },
-    "summary": "The customer states that invoice #8821 has a charge of $1,240, which does not match their contract rate of $980 per month. They are requesting that someone investigate the discrepancy.",
+    "summary": "The customer noticed that invoice #8821 includes a charge of $1,240, which differs from their agreed contract rate of $980 per month. They have requested that someone review the charges.",
     "meta": {
       "model": "gemini-3.5-flash-lite",
       "prompt_version": "v2",
@@ -170,22 +172,23 @@
   {
     "request_id": "50506a7dceb0907a",
     "source": "Email",
-    "received_at": "2026-09-29T15:19:32.208Z",
+    "received_at": "2026-09-30T09:29:14.888Z",
     "raw_message": "I'm not sure if this is the right place to ask, but is there a way to set up SSO with Okta? We're evaluating switching our auth provider.",
     "classification": {
       "category": "Technical Question",
       "priority": "Medium",
       "confidence": 0.95,
-      "rationale": "The user is asking 'is there a way to set up SSO with Okta?', which indicates a configuration and capability inquiry rather than a bug or billing issue."
+      "rationale": "The user is asking 'is there a way to set up SSO with Okta', which indicates a how-to and capability inquiry."
     },
     "enrichment": {
-      "core_issue": "The customer is asking if there is a way to set up Single Sign-On (SSO) with Okta while evaluating auth providers.",
+      "core_issue": "The customer is asking if it is possible to configure Single Sign-On using Okta as they evaluate switching their authentication provider.",
       "identifiers": {
         "account_ids": [],
         "invoice_numbers": [],
         "error_codes": [],
         "amounts": [],
         "other": [
+          "SSO",
           "Okta"
         ]
       },
@@ -197,7 +200,7 @@
       "urgency": {
         "level": "Low",
         "evidence": [
-          "is there a way to set up SSO with Okta"
+          "I'm not sure if this is the right place to ask, but is there a way to set up SSO with Okta?"
         ]
       },
       "signals": {
@@ -215,7 +218,7 @@
       "escalated": false,
       "reasons": []
     },
-    "summary": "The customer is inquiring about setting up Single Sign-On using Okta as they evaluate switching their authentication provider. They are seeking technical guidance on whether this integration is supported.",
+    "summary": "The customer is inquiring about how to set up Single Sign-On with Okta. They mention they are currently evaluating switching their authentication provider.",
     "meta": {
       "model": "gemini-3.5-flash-lite",
       "prompt_version": "v2",
@@ -225,16 +228,16 @@
   {
     "request_id": "76a2f429ef2694b9",
     "source": "Web Form",
-    "received_at": "2026-09-29T15:19:55.816Z",
+    "received_at": "2026-09-30T09:29:30.718Z",
     "raw_message": "Your dashboard stopped loading for us around 2pm EST. Checked our end — it's definitely on yours. Multiple users affected.",
     "classification": {
       "category": "Incident/Outage",
       "priority": "High",
       "confidence": 0.95,
-      "rationale": "The user reported that the dashboard stopped loading for multiple users and is on our end, indicating an outage."
+      "rationale": "The phrases 'dashboard stopped loading' and 'Multiple users affected' indicate an outage affecting the whole account."
     },
     "enrichment": {
-      "core_issue": "The customer is reporting that the dashboard stopped loading and the service is unavailable.",
+      "core_issue": "The customer is reporting that the dashboard stopped loading for them and is requesting assistance with the outage.",
       "identifiers": {
         "account_ids": [],
         "invoice_numbers": [],
@@ -250,15 +253,14 @@
       "urgency": {
         "level": "High",
         "evidence": [
-          "stopped loading",
-          "Multiple users affected"
+          "dashboard stopped loading"
         ]
       },
       "signals": {
         "multiple_users_affected": true,
         "service_unavailable": true,
         "evidence": [
-          "stopped loading",
+          "dashboard stopped loading",
           "Multiple users affected"
         ]
       }
@@ -275,7 +277,7 @@
         "outage_signal"
       ]
     },
-    "summary": "The customer reports that the dashboard stopped working around 2pm EST and confirms the issue is on the service side. They note that multiple users are affected by this outage.",
+    "summary": "The customer reports that the dashboard stopped loading at approximately 2pm EST and confirmed the issue is on the service provider's end. They note that multiple users are affected by this outage.",
     "meta": {
       "model": "gemini-3.5-flash-lite",
       "prompt_version": "v2",
